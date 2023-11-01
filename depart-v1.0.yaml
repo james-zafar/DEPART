@@ -1,0 +1,262 @@
+swagger: '2.0'
+info:
+  title: Behaviour Discovery API
+  version: '1.0'
+basePath: /v1
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/models':
+    post:
+      summary: Create a new Model from aircraft data
+      description: |
+        Builds a delay Model for predicting the delay of a given aircraft departing from SCL airport.
+        Building a model takes time and this call can return before the process has completed;
+        use the `get_model` API to check on the build progress.
+      operationId: create_model
+      tags:
+        - Models
+      parameters:
+        - name: config
+          in: body
+          description: |
+            Configuration of the model
+          schema:
+            $ref: '#/definitions/ModelConfig'
+          required: true
+      responses:
+        '201':
+          description: |
+            A new model was created from the given settings
+          headers:
+            'Location':
+              description: |
+                The URL of the new model
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: pending
+        '400':
+          $ref: '#/responses/BadRequest'
+
+  '/models/{model_id}':
+    parameters:
+      - name: model_id
+        in: path
+        description: Unique identifier for a delay model
+        type: string
+        format: uuid
+        required: true
+    get:
+      summary: Retrieve the current state of a delay model
+      description: |
+        Retrieves the state of a behaviour model specified by its `model_id`.
+        Use this to determine when the model has finished building and is either
+        ready for use, or has failed with an error.
+      operationId: get_model
+      tags:
+        - Models
+      parameters:
+        - name: export
+          in: query
+          description: Use to export the delay model specified by its `model_id`
+          type: boolean
+          required: false
+        - name: file-name
+          in: query
+          description: |
+            Use to specify the file name to use when exporting a model.
+            Use this only in conjunction with the `export` query parameter.
+          type: string
+          required: false
+      responses:
+        '200':
+          description: |
+            The model was retrieved successfully.
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+    delete:
+      summary: Delete a delay model
+      description: |
+        Deletes a delay model specified by its `model_id`.
+      operationId: delete_model
+      tags:
+        - Models
+      responses:
+        '204':
+          description: |
+            The model was deleted successfully
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+
+  '/deploy':
+    put:
+      summary: Deploy a model to production
+      description: |
+        Updates the current production model.
+        Use this to replace the current production model with the model specified in 
+        the query parameter `model-id`.
+        Returns a Bad Request if the `model-id` corresponds to the currently deployed model.
+      operationId: deploy_model
+      tags:
+        - Models
+      parameters:
+        - name: model-id
+          in: query
+          description: Unique identifier for a delay model
+          type: string
+          format: uuid
+          required: true
+      responses:
+        '200':
+          description: |
+            The deployed model was updated successfully
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+              deployed: ok
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+
+  '/health':
+    get:
+      summary: Check that the service is up
+      description: |
+        Checks if the service is running and ready to service requests.
+      operationId: operations
+      tags:
+        - Health
+      responses:
+        '204':
+          description: |
+            The service is up
+
+definitions:
+  Model:
+    description: |
+      A delay model
+    type: object
+    properties:
+      id:
+        description: |
+          A unique identifier (UUID) for this model
+        type: string
+        format: uuid
+      status:
+        $ref: '#/definitions/Status'
+      errors:
+        description: |
+          A list of error messages, typically empty unless the status is `failed`.
+        type: array
+        items:
+          $ref: '#/definitions/ErrorItem'
+    required:
+      - id
+      - status
+    additionalProperties:
+      type: string
+  ModelConfig:
+    description: |
+      Configures a model training task
+    type: object
+    properties:
+      data_source:
+        description: |
+          The path to the CSV data to use for training.
+        type: string
+    required:
+      - data_source
+  Status:
+    description: |
+      Resource status, one of:
+      - pending: the resource has been created but not completed
+      - completed: the resource was completed successfully
+      - failed: the resource could not be completed
+    type: string
+    enum:
+      - pending
+      - running
+      - completed
+      - failed
+  Error:
+    type: object
+    description: |
+      General error response body
+    properties:
+      errors:
+        description: |
+          This field MUST contain an array with at least one error model.
+        type: array
+        items:
+          $ref: '#/definitions/ErrorItem'
+        minItems: 1
+      trace:
+        description: |
+          This field SHOULD contain a lowercase UUID uniquely identifying the request.
+        type: string
+      status_code:
+        description: |
+          This field MAY contain the HTTP status code used for the response. Otherwise, it MUST be omitted.
+        type: integer
+    required:
+      - errors
+    additionalProperties: false
+  ErrorItem:
+    description: |
+      An error message.
+    type: object
+    properties:
+      code:
+        description: |
+          This field MUST contain a snake case string succinctly identifying the problem.
+          This field SHOULD NOT indicate which field, parameter, or header caused the error.
+        type: string
+      message:
+        description: |
+          This field MUST contain a plainly-written, developer-oriented explanation of the solution to the problem
+          in complete, well-formed sentences.
+        type: string
+    required:
+      - code
+      - message
+    additionalProperties: false
+
+responses:
+  BadRequest:
+    description: |
+      The request body or parameters were incorrect
+    schema:
+      $ref: '#/definitions/Error'
+  NotFound:
+    description: |
+      The specified model, experiment or cluster was not found
+    schema:
+      $ref: '#/definitions/Error'
+
+tags:
+  - name: Models
+  - name: Health
