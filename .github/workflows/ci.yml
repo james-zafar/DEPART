@@ -1,0 +1,38 @@
+name: 'Continuous Integration'
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run MyPy
+        run: |
+          sh ./scripts/run_mypy.sh
+      - name: Run Pylint
+        run: |
+          sh ./scripts/run_pylint.sh
+      - name: Run API tests
+        run: |
+          sh ./scripts/run_api_tests.sh
+      - name: Run model tests
+        run: |
+          sh ./scripts/run_model_tests.sh
+      - name: Build the Docker image
+        run: docker build . --tag latam-tech-challenge-api:$(date +%s)
