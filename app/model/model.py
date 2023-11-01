@@ -15,7 +15,6 @@ def get_min_diff(data: pd.DataFrame) -> float:
 
 
 class DelayModel:
-
     def __init__(self) -> None:
         self._model = None  # type: LogisticRegression
 
@@ -25,13 +24,13 @@ class DelayModel:
             model = pickle.load(f)
         instance = cls()
         if not isinstance(model, LogisticRegression):
-            raise AttributeError(f'The file {file_name!r} does not contain a valid model. Expected type {type(LogisticRegression)!r} but got {type(model)!r} ')
+            raise AttributeError(f'The file {file_name!r} does not contain a valid model. '
+                                 f'Expected type {type(LogisticRegression)!r} but got {type(model)!r} ')
         instance._model = model
 
         return instance
 
-    def preprocess(self, data: pd.DataFrame,
-                   target_column: str = None) -> Union[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]:
+    def preprocess(self, data: pd.DataFrame, target_column: str = None) -> Union[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]:
         data['min_diff'] = data.apply(get_min_diff, axis=1)
 
         threshold_in_minutes = 15
