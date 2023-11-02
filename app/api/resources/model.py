@@ -17,8 +17,8 @@ class Model:
     def new_model(cls) -> 'Model':
         return cls(id=uuid.uuid4(), status=Status.PENDING)
 
-    def json(self) -> dict[str, str]:
-        json_resp = {
+    def json(self) -> dict[str, str | list[dict[str, str]]]:
+        json_resp: dict[str, str | list[dict[str, str]]] = {
             'id': str(self.id),
             'status': self.status.value
         }

@@ -24,7 +24,7 @@ class ModelStore(MutableMapping[KT, VT]):
     def update_model(self, model_id: KT, model: DelayModel) -> None:
         self[model_id].model = model
 
-    def get(self, model_id: KT) -> VT | None:
+    def get(self, model_id: KT) -> VT | None:  # type: ignore
         if model_id in self:
             return self[model_id]
         return None

@@ -32,4 +32,4 @@ if __name__ == '__main__':
         config['ssl_keyfile'] = os.getenv('TLS_KEY_PATH', '/mnt/certs/tls.key')
         config['ssl_certfile'] = os.getenv('TLS_CERT_PATH', '/mnt/certs/tls.crt')
 
-    uvicorn.run(**config, log_config=None)
+    uvicorn.run(**config, log_config=None)  # type: ignore
