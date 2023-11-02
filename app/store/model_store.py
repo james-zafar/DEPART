@@ -29,6 +29,9 @@ class ModelStore(MutableMapping[KT, VT]):
             return self[model_id]
         return None
 
+    def clear(self) -> None:
+        self._data.clear()
+
     def __setitem__(self, model_id: KT, value: VT) -> None:
         self._data[model_id] = value
 
