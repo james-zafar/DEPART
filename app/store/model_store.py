@@ -22,7 +22,7 @@ class ModelStore(MutableMapping[KT, VT]):
         model.status = status
 
     def add_model(self, model: Model) -> None:
-        self[str(model.id)] = model
+        self[str(model.id)] = model  # type: ignore
 
     def update_model(self, model_id: KT, model: DelayModel) -> None:
         self[model_id].model = model
