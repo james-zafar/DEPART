@@ -1,10 +1,19 @@
+import pickle
+
 import uvicorn
 from fastapi import FastAPI
 
 from app.api.init_router import init_router
+from app.model import DelayModel
 from app.store import ModelStore
 
 V1_URL_PREFIX: str = '/v1'
+
+
+def _load_model() -> DelayModel:
+    with open('./models/modelv1.0.pkl', 'rb') as f:
+        return pickle.loads(f)
+
 
 app = FastAPI(
     title='Delay prediction Service',
@@ -15,6 +24,7 @@ app = FastAPI(
 
 app.include_router(init_router(V1_URL_PREFIX))
 app.state.model_store = ModelStore()
+app.state.model = _load_model()
 
 if __name__ == '__main__':
     # if os.getenv('ENABLE_HTTPS') != 'False':

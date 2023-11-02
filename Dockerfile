@@ -22,6 +22,7 @@ WORKDIR ${HOME}
 COPY ./requirements.txt ${HOME}/requirements.txt
 
 COPY ./app ${HOME}/app
+COPY ./models ${HOME}/models
 
 RUN pip install --upgrade pip && pip install --no-cache-dir -r ${HOME}/requirements.txt && \
     chown -R 1001:0 ${APP_ROOT} && \
