@@ -62,6 +62,13 @@ class DelayModel:
 
         return self
 
+    def train(self, file_name: str, target_col: str = 'delay') -> 'DelayModel':
+        with open(file_name, 'r') as f:
+            data = pd.read_csv(file_name)
+
+        features, target = self.preprocess(data, target_col)
+        return self.fit(features, target)
+
     def predict(self, features: pd.DataFrame) -> List[int]:
         return self._model.predict(features).tolist()
 

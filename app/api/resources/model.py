@@ -1,13 +1,15 @@
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.api.schemas import Status
+from app.model import DelayModel
 
 
-@dataclass
+@dataclass(eq=False)
 class Model:
     id: uuid.UUID
     status: Status
+    model: DelayModel = field(default=None)
 
     @classmethod
     def new_model(cls) -> 'Model':

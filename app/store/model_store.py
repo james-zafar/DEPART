@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
 from app.api.resources import Model
+from app.model.model import DelayModel
 from app.api.schemas import Status
 
 KT = TypeVar('KT', bound=str)
@@ -13,12 +14,15 @@ VT = TypeVar('VT', bound=Model)
 class ModelStore(MutableMapping[KT, VT]):
     _data: dict[KT, VT] = field(default_factory=dict, init=False)
 
-    def set_status(self, model_id: KT, status: Status) -> None:
+    def update_status(self, model_id: KT, status: Status) -> None:
         if model_id not in self:
             raise KeyError(f'Unable to locate a model with the specified ID: {model_id}')
-        if (model := self[model_id][0]).status in (Status.FAILED, Status.COMPLETED):
+        if (model := self[model_id]).status in (Status.FAILED, Status.COMPLETED):
             raise ValueError('')
         model.status = status
+
+    def update_model(self, model_id: KT, model: DelayModel) -> None:
+        self[model_id].model = model
 
     def get(self, model_id: KT) -> VT | None:
         if model_id in self:
