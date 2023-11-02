@@ -73,3 +73,7 @@ class TestModel(unittest.TestCase):
         self.assertIsInstance(predicted_targets, list)
         self.assertEqual(len(predicted_targets), features.shape[0])
         self.assertTrue(all(isinstance(predicted_target, int) for predicted_target in predicted_targets))
+
+
+if __name__ == '__main__':
+    unittest.main()
