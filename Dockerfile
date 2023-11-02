@@ -1,6 +1,4 @@
-# syntax=docker/dockerfile:1.2
 FROM python:latest
-# put you docker configuration here
 
 ENV APP_ROOT=/opt/app-root
 RUN mkdir -p ${APP_ROOT}/python
@@ -31,4 +29,4 @@ EXPOSE 8000
 
 user 1001
 
-CMD [ "python", "-m",  "app.api" ]
+CMD [ "python", "-m",  "app.main" ]
