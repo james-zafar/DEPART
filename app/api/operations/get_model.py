@@ -18,7 +18,7 @@ async def get_model(model_id: uuid.UUID, request: Request, export: bool | None =
     if export:
         if model.status != Status.COMPLETED:
             return JSONResponse(content=new_error_response([ModelNotReadyError()]), status_code=404)
-        file_name = f'{model_id}.pkl' or file_name
+        file_name = file_name or f'{model_id}.pkl'
         model.model.save(file_name)
         response_json['export'] = 'OK'
-    return JSONResponse(content=model.json(), status_code=200)
+    return JSONResponse(content=response_json, status_code=200)

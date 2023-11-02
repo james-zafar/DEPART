@@ -126,6 +126,11 @@ paths:
           type: string
           format: uuid
           required: true
+        - name: X-api-key
+          in: header
+          description: A base64 encoded bearer token associated with the client
+          type: string
+          required: true
       responses:
         '200':
           description: |

@@ -1,11 +1,16 @@
 from app.api.errors.error_response import new_error_response
-from app.api.errors.errors import DataFormatError, InvalidDataSourceError, InternalServerError, ModelNotFoundError, ModelNotReadyError
+from app.api.errors.errors import (DataFormatError, ForbiddenError, InvalidDataSourceError,
+                                   InternalServerError, ModelNotFoundError,
+                                   ModelNotReadyError, UnauthorizedError, UnsupportedModelTypeError)
 
 __all__ = [
     'DataFormatError',
+    'ForbiddenError',
     'InvalidDataSourceError',
     'InternalServerError',
     'ModelNotFoundError',
     'ModelNotReadyError',
-    'new_error_response'
+    'new_error_response',
+    'UnauthorizedError',
+    'UnsupportedModelTypeError'
 ]
