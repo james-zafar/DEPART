@@ -19,7 +19,7 @@ async def create_model(config: CreateModelRequestBody, request: Request) -> JSON
         delay_model = delay_model.train(str(config.data_source))
         request.app.state.model_store.update_status(str(model.id), Status.COMPLETED)
     except FileNotFoundError:
-        return JSONResponse(content=new_error_response([InvalidDataSourceError()]), status_code=400)
+        return JSONResponse(content=new_error_response([InvalidDataSourceError()]), status_code=InvalidDataSourceError.status_code)
     except (KeyError, TypeError, ValueError):
         model.errors.append(DataFormatError())
         request.app.state.model_store.update_status(str(model.id), Status.FAILED)

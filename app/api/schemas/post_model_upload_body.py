@@ -1,4 +1,4 @@
-from pydantic import BaseModel, FilePath, AnyHttpUrl, Field
+from pydantic import BaseModel, FilePath, AnyHttpUrl
 
 
 class UploadModelsBody(BaseModel):

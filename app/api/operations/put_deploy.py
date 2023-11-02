@@ -22,7 +22,7 @@ def _validate_api_key(x_api_key: str) -> type[UnauthorizedError] | type[Forbidde
         return UnauthorizedError
     if x_api_key != api_key:
         return ForbiddenError
-
+    return None
 
 @deploy_models_router.put('', status_code=200)
 async def deploy_model(request: Request, model_id: uuid.UUID = Query(alias='model-id'), x_api_key: str = Depends(X_API_KEY)) -> JSONResponse:

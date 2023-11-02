@@ -14,7 +14,7 @@ async def post_models_upload(config: UploadModelsBody, request: Request) -> JSON
     model = Model.new_model()
     request.app.state.model_store[str(model.id)] = model
     try:
-        delay_model = DelayModel.load(config.model_location)
+        delay_model = DelayModel.load(str(config.model_location))
     except FileNotFoundError:
         return JSONResponse(content=new_error_response([InvalidDataSourceError()]),
                             status_code=InvalidDataSourceError.status_code)

@@ -60,7 +60,7 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(resp_json['errors'][0], UnauthorizedError().json())
 
     def test_deploy_fails_with_invalid_api_key(self) -> None:
-        resp = self.client.put(f'/v1/models/deploy?model-id={self.model_id}', headers={'X-api-key': f'admin=APIKEY'})
+        resp = self.client.put(f'/v1/models/deploy?model-id={self.model_id}', headers={'X-api-key': 'admin=APIKEY'})
         self.assertEqual(resp.status_code, 403)
         resp_json = resp.json()
         # The response should only contain errors
