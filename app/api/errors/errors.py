@@ -15,7 +15,7 @@ class InvalidDataSourceError(Error):
 
 class ModelNotReadyError(Error):
     code = 'model_not_ready'
-    message = 'A model can not be exported until it has completed'
+    message = 'A model can not be exported or deployed until it has completed'
     status_code = 400
 
 
@@ -27,13 +27,13 @@ class UnsupportedModelTypeError(Error):
 
 class UnauthorizedError(Error):
     code = 'operation_not_allowed'
-    message = 'The model type specified is not supported'
+    message = 'This user and/or API key specified are invalid'
     status_code = 401
 
 
 class ForbiddenError(Error):
     code = 'unsupported_model'
-    message = 'The model type specified is not supported'
+    message = 'The specified does not have permission to perform this operation'
     status_code = 403
 
 
