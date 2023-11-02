@@ -1,0 +1,16 @@
+ri-I,Des-I,Emp-I,Fecha-O,Vlo-O,Ori-O,Des-O,Emp-O,DIA,MES,AÑO,DIANOM,TIPOVUELO,OPERA,SIGLAORI,SIGLADES
+SCEL,KMIA,AAL,2017-01-01 23:33:00,226,SCEL,KMIA,AAL,1,1,2017,Domingo,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-02 23:39:00,226,SCEL,KMIA,AAL,2,1,2017,Lunes,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-03 23:39:00,226,SCEL,KMIA,AAL,3,1,2017,Martes,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-04 23:33:00,226,SCEL,KMIA,AAL,4,1,2017,Miercoles,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-05 23:28:00,226,SCEL,KMIA,AAL,5,1,2017,Jueves,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-07 00:04:00,226,SCEL,KMIA,AAL,7,1,2017,Sabado,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-07 23:25:00,226,SCEL,KMIA,AAL,7,1,2017,Sabado,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-08 23:25:00,226,SCEL,KMIA,AAL,8,1,2017,Domingo,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-10 00:10:00,226,SCEL,KMIA,AAL,10,1,2017,Martes,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-12 00:39:00,226,SCEL,KMIA,AAL,12,1,2017,Jueves,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-14 23:21:00,226,SCEL,KMIA,AAL,14,1,2017,Sabado,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-16 23:44:00,226,SCEL,KMIA,AAL,16,1,2017,Lunes,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-18 23:23:00,226,SCEL,KMIA,AAL,18,1,2017,Miercoles,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-21 23:26:00,226,SCEL,KMIA,AAL,21,1,2017,Sabado,I,American Airlines,Santiago,Miami
+SCEL,KMIA,AAL,2017-01-23 23:19:00,226,SCEL,KMIA,AAL,23,1,2017,Lunes,I,American Airlines,Santiago,Miami

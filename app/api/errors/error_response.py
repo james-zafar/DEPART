@@ -8,7 +8,7 @@ def new_error_response(errors: Sequence['Error']) -> dict[str, list[dict[str, st
     }
 
 
-@dataclass
+@dataclass(init=False)
 class Error:
     code: str
     message: str
