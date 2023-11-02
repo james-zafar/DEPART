@@ -18,8 +18,11 @@ class ModelStore(MutableMapping[KT, VT]):
         if model_id not in self:
             raise KeyError(f'Unable to locate a model with the specified ID: {model_id}')
         if (model := self[model_id]).status in (Status.FAILED, Status.COMPLETED):
-            raise ValueError('')
+            raise ValueError('The status of a completed or failed model can not be changed.')
         model.status = status
+
+    def add_model(self, model: Model) -> None:
+        self[str(model.id)] = model
 
     def update_model(self, model_id: KT, model: DelayModel) -> None:
         self[model_id].model = model

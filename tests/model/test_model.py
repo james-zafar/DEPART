@@ -54,7 +54,7 @@ class TestModel(unittest.TestCase):
 
         self.model.fit(features=features, target=target)
 
-        predicted_target = self.model._model.predict(features_validation)
+        predicted_target = self.model._model.predict(features_validation)  # pylint: disable=protected-access
 
         report = classification_report(target_validation, predicted_target, output_dict=True)  # type: dict
 

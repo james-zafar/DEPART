@@ -10,7 +10,7 @@ delete_models_router = APIRouter(prefix='/models/{model_id}')
 
 
 @delete_models_router.delete('', status_code=204)
-async def create_model(model_id: uuid.UUID, request: Request) -> JSONResponse:
+async def delete_model(model_id: uuid.UUID, request: Request) -> JSONResponse:
     if str(model_id) not in request.app.state.model_store:
         return JSONResponse(content=new_error_response([ModelNotFoundError()]), status_code=404)
     elif random.randint(0, 100) % 50 == 0:

@@ -19,6 +19,12 @@ class ModelNotFoundError(Error):
     status_code = 404
 
 
+class ModelNotReadyError(Error):
+    code = 'model_not_ready'
+    message = 'A model can not be exported until it has completed.'
+    status_code = 400
+
+
 class InternalServerError(Error):
     code = 'internal_error'
     message = 'An internal error occurred'

@@ -54,7 +54,7 @@ class TestCreateModel(unittest.TestCase):
         # The model resource should contain a DelayModel
         self.assertIsInstance(model.model, DelayModel)
         # And the DelayModel should be a LogisticRegression model
-        self.assertIsInstance(model.model._model, LogisticRegression)
+        self.assertIsInstance(model.model._model, LogisticRegression)  # pylint: disable=protected-access
 
     def test_create_model_with_no_data_source(self) -> None:
         # Creating a model with no `data_source` in the req body should result in a 422
