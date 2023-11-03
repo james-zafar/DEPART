@@ -37,6 +37,12 @@ class ForbiddenError(Error):
     status_code = 403
 
 
+class RemoveModelForbiddenError(Error):
+    code = 'model_not_deletable'
+    message = 'The specified model can not be removed.'
+    status_code = 403
+
+
 class ModelNotFoundError(Error):
     code = 'model_not_found'
     message = 'A model with the specified ID could not be located'
