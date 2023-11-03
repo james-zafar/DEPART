@@ -147,6 +147,41 @@ paths:
         '404':
           $ref: '#/responses/NotFound'
 
+  '/models/upload':
+    post:
+      summary: Upload a new model
+      description: |
+        Upload an existing model from the local filesystem or remote storage.
+      operationId: upload_model
+      tags:
+        - Models
+      parameters:
+        - name: config
+          in: body
+          description: |
+            Configuration of the model
+          schema:
+            $ref: '#/definitions/UploadModelsConfig'
+          required: true
+      responses:
+        '201':
+          description: |
+            Upload and create a new model from the specified source
+          headers:
+            'Location':
+              description: |
+                The URL of the new model
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+        '400':
+          $ref: '#/responses/BadRequest'
+
   '/predictions':
     post:
       summary: Create new predictions for given aircraft data
@@ -304,6 +339,18 @@ definitions:
     required:
       - predictions
     additionalProperties: false
+  UploadModelsConfig:
+    type: object
+    description: |
+      Configuration for uploading a new model from an external source
+    properties:
+      model_location:
+        description: |
+          The location of the model.
+          Must be either a path to a file on the local file system, or a valid public Google Drive link
+        type: string
+    required:
+      - model_location
   Error:
     type: object
     description: |
