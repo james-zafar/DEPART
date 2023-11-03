@@ -2,4 +2,4 @@
 
 cd "$(dirname "$0")/.." || exit
 
-python -m unittest tests.model.test_model
+python -m unittest discover -s "$(pwd)/tests/model" -p 'test*'

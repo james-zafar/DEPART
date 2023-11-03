@@ -54,7 +54,7 @@ class TestModel(unittest.TestCase):
 
         self.model.fit(features=features, target=target)
 
-        predicted_target = self.model._model.predict(features_validation)
+        predicted_target = self.model._model.predict(features_validation)  # pylint: disable=protected-access
 
         report = classification_report(target_validation, predicted_target, output_dict=True)  # type: dict
 
@@ -73,3 +73,7 @@ class TestModel(unittest.TestCase):
         self.assertIsInstance(predicted_targets, list)
         self.assertEqual(len(predicted_targets), features.shape[0])
         self.assertTrue(all(isinstance(predicted_target, int) for predicted_target in predicted_targets))
+
+
+if __name__ == '__main__':
+    unittest.main()

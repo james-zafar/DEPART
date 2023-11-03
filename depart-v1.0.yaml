@@ -1,0 +1,408 @@
+swagger: '2.0'
+info:
+  title: Flight delay prediction API
+  version: '1.0'
+basePath: /v1
+schemes:
+  - http
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/models':
+    post:
+      summary: Create a new Model from aircraft data
+      description: |
+        Builds a delay Model for predicting the delay of a given aircraft departing from SCL airport.
+        Building a model takes time and this call can return before the process has completed;
+        use the `get_model` API to check on the build progress.
+      operationId: create_model
+      tags:
+        - Models
+      parameters:
+        - name: config
+          in: body
+          description: |
+            Configuration of the model
+          schema:
+            $ref: '#/definitions/ModelConfig'
+          required: true
+      responses:
+        '201':
+          description: |
+            A new model was created from the given settings
+          headers:
+            'Location':
+              description: |
+                The URL of the new model
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: pending
+        '400':
+          $ref: '#/responses/BadRequest'
+
+  '/models/{model_id}':
+    parameters:
+      - name: model_id
+        in: path
+        description: Unique identifier for a delay model
+        type: string
+        format: uuid
+        required: true
+    get:
+      summary: Retrieve the current state of a delay model
+      description: |
+        Retrieves the state of a delay model specified by its `model_id`.
+        Use this to determine when the model has finished building and is either
+        ready for use, or has failed with an error.
+      operationId: get_model
+      tags:
+        - Models
+      parameters:
+        - name: export
+          in: query
+          description: Use to export the delay model specified by its `model_id`
+          type: boolean
+          required: false
+        - name: file-name
+          in: query
+          description: |
+            Use to specify the file name to use when exporting a model.
+            Use this only in conjunction with the `export` query parameter.
+          type: string
+          required: false
+      responses:
+        '200':
+          description: |
+            The model was retrieved successfully.
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+    delete:
+      summary: Delete a delay model
+      description: |
+        Deletes a delay model specified by its `model_id`.
+      operationId: delete_model
+      tags:
+        - Models
+      responses:
+        '204':
+          description: |
+            The model was deleted successfully
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+
+  '/models/deploy':
+    put:
+      summary: Deploy a model to production
+      description: |
+        Updates the current production model.
+        Use this to replace the current production model with the model specified in 
+        the query parameter `model-id`.
+        Returns a Bad Request if the `model-id` corresponds to the currently deployed model.
+      operationId: deploy_model
+      tags:
+        - Models
+      parameters:
+        - name: model-id
+          in: query
+          description: Unique identifier for a delay model
+          type: string
+          format: uuid
+          required: true
+        - name: X-api-key
+          in: header
+          description: A base64 encoded bearer token associated with the client
+          type: string
+          required: true
+      responses:
+        '200':
+          description: |
+            The deployed model was updated successfully
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+              deployed: ok
+        '400':
+          $ref: '#/responses/BadRequest'
+        '404':
+          $ref: '#/responses/NotFound'
+
+  '/models/upload':
+    post:
+      summary: Upload a new model
+      description: |
+        Upload an existing model from the local filesystem or remote storage.
+      operationId: upload_model
+      tags:
+        - Models
+      parameters:
+        - name: config
+          in: body
+          description: |
+            Configuration of the model
+          schema:
+            $ref: '#/definitions/UploadModelsConfig'
+          required: true
+      responses:
+        '201':
+          description: |
+            Upload and create a new model from the specified source
+          headers:
+            'Location':
+              description: |
+                The URL of the new model
+              type: string
+              format: url
+          schema:
+            $ref: '#/definitions/Model'
+          examples:
+            application/json:
+              id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
+              status: completed
+        '400':
+          $ref: '#/responses/BadRequest'
+
+  '/predictions':
+    post:
+      summary: Create new predictions for given aircraft data
+      description: |
+        Predicts the length of delay for a given flight in the input.
+        Use /models/deploy to update the production model.
+      operationId: predict
+      tags:
+        - Predictions
+      parameters:
+        - name: flights
+          in: body
+          description: |
+            The list of flights
+          schema:
+            $ref: '#/definitions/PredictionsConfig'
+          required: true
+      responses:
+        '200':
+          description: |
+            The deployed model was updated successfully
+          schema:
+            $ref: '#/definitions/PredictionsResponse'
+          examples:
+            application/json:
+              predictions:
+                - 0
+                - 4.2
+                - 10
+        '400':
+          $ref: '#/responses/BadRequest'
+
+  '/health':
+    get:
+      summary: Check that the service is up
+      description: |
+        Checks if the service is running and ready to service requests.
+      operationId: operations
+      tags:
+        - Health
+      responses:
+        '204':
+          description: |
+            The service is up
+
+definitions:
+  Model:
+    description: |
+      A delay model
+    type: object
+    properties:
+      id:
+        description: |
+          A unique identifier (UUID) for this model
+        type: string
+        format: uuid
+      status:
+        $ref: '#/definitions/Status'
+      errors:
+        description: |
+          A list of error messages, typically empty unless the status is `failed`.
+        type: array
+        items:
+          $ref: '#/definitions/ErrorItem'
+      download:
+        description: |
+          The status of the export request, typically omitted until export has completed.
+        type: string
+      deployed:
+        description: |
+          The status of the deploy job, typically only present when using PUT /models/deploy
+        type: string
+    required:
+      - id
+      - status
+  ModelConfig:
+    description: |
+      Configures a model training task
+    type: object
+    properties:
+      data_source:
+        description: |
+          The path to the CSV data to use for training.
+        type: string
+    required:
+      - data_source
+  Status:
+    description: |
+      Resource status, one of:
+      - pending: the resource has been created but not completed
+      - completed: the resource was completed successfully
+      - failed: the resource could not be completed
+    type: string
+    enum:
+      - pending
+      - running
+      - completed
+      - failed
+  PredictionsConfig:
+    type: object
+    description: |
+      Configures a prediction task
+    properties:
+      flights:
+        description: |
+          An array of flights
+        type: array
+        items:
+          $ref: '#/definitions/Flight'
+        minItems: 1
+    required:
+      - flights
+    additionalProperties: false
+  Flight:
+    type: object
+    description: |
+      Flight data to be used for predictions. Additional columns present during training
+      should be provided but are not required
+    properties:
+      opera:
+        description: The name of the airline that operates the flight
+        type: string
+      tipovuelo:
+        description: Type of flight, I = International, N = National
+        type: string
+      mes:
+        description: The number of the month of operation of the flight
+        type: integer
+      Fecha-O:
+        description: The actual date and time of flight operation
+        type: string
+      Fecha-I:
+        description: The scheduled date and time of the flight
+        type: string
+    required:
+      - opera
+      - tipovuelo
+      - mes
+      - Fecha-O
+      - Fecha-I
+    additionalProperties: true
+  PredictionsResponse:
+    type: object
+    description: |
+      An array of predictions
+    properties:
+      predictions:
+        description: |
+          An array of predictions, with each element corresponding to the estimated delay
+          for a flight in the inputs
+        type: array
+        items:
+          type: integer
+          minItems: 1
+    required:
+      - predictions
+    additionalProperties: false
+  UploadModelsConfig:
+    type: object
+    description: |
+      Configuration for uploading a new model from an external source
+    properties:
+      model_location:
+        description: |
+          The location of the model.
+          Must be either a path to a file on the local file system, or a valid public Google Drive link
+        type: string
+    required:
+      - model_location
+  Error:
+    type: object
+    description: |
+      General error response body
+    properties:
+      errors:
+        description: |
+          This field MUST contain an array with at least one error model.
+        type: array
+        items:
+          $ref: '#/definitions/ErrorItem'
+        minItems: 1
+      status_code:
+        description: |
+          This field MAY contain the HTTP status code used for the response. Otherwise, it MUST be omitted.
+        type: integer
+    required:
+      - errors
+    additionalProperties: false
+  ErrorItem:
+    description: |
+      An error message.
+    type: object
+    properties:
+      code:
+        description: |
+          This field MUST contain a snake case string succinctly identifying the problem.
+          This field SHOULD NOT indicate which field, parameter, or header caused the error.
+        type: string
+      message:
+        description: |
+          This field MUST contain a plainly-written, developer-oriented explanation of the solution to the problem
+          in complete, well-formed sentences.
+        type: string
+    required:
+      - code
+      - message
+    additionalProperties: false
+
+responses:
+  BadRequest:
+    description: |
+      The request body or parameters were incorrect
+    schema:
+      $ref: '#/definitions/Error'
+  NotFound:
+    description: |
+      The specified model, experiment or cluster was not found
+    schema:
+      $ref: '#/definitions/Error'
+
+tags:
+  - name: Health
+  - name: Models
+  - name: Predictions
