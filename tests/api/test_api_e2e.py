@@ -79,9 +79,9 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(deploy_response.status_code, 200)
         deploy_response_json = deploy_response.json()
         # The response should contain only 2 fields
-        self.assertCountEqual(['model_id', 'deployed'], deploy_response_json.keys())
+        self.assertCountEqual(['id', 'deployed'], deploy_response_json.keys())
         # The ID should be the same as the input ID
-        self.assertEqual(model_id, deploy_response_json['model_id'])
+        self.assertEqual(model_id, deploy_response_json['id'])
         # FIXME: We should ideally track the ID of he model currently in prod
 
         # Next let's generate some predictions

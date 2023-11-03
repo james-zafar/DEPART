@@ -108,7 +108,7 @@ paths:
         '404':
           $ref: '#/responses/NotFound'
 
-  '/deploy':
+  '/models/deploy':
     put:
       summary: Deploy a model to production
       description: |
@@ -147,6 +147,38 @@ paths:
         '404':
           $ref: '#/responses/NotFound'
 
+  '/predictions':
+    post:
+      summary: Create new predictions for given aircraft data
+      description: |
+        Predicts the length of delay for a given flight in the input.
+        Use /models/deploy to update the production model.
+      operationId: predict
+      tags:
+        - Predictions
+      parameters:
+        - name: flights
+          in: body
+          description: |
+            The list of flights
+          schema:
+            $ref: '#/definitions/PredictionsConfig'
+          required: true
+      responses:
+        '200':
+          description: |
+            The deployed model was updated successfully
+          schema:
+            $ref: '#/definitions/PredictionsResponse'
+          examples:
+            application/json:
+              predictions:
+                - 0
+                - 4.2
+                - 10
+        '400':
+          $ref: '#/responses/BadRequest'
+
   '/health':
     get:
       summary: Check that the service is up
@@ -179,11 +211,17 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ErrorItem'
+      download:
+        description: |
+          The status of the export request, typically omitted until export has completed.
+        type: string
+      deployed:
+        description: |
+          The status of the deploy job, typically only present when using PUT /models/deploy
+        type: string
     required:
       - id
       - status
-    additionalProperties:
-      type: string
   ModelConfig:
     description: |
       Configures a model training task
@@ -207,6 +245,65 @@ definitions:
       - running
       - completed
       - failed
+  PredictionsConfig:
+    type: object
+    description: |
+      Configures a prediction task
+    properties:
+      flights:
+        description: |
+          An array of flights
+        type: array
+        items:
+          $ref: '#/definitions/Flight'
+        minItems: 1
+    required:
+      - flights
+    additionalProperties: false
+  Flight:
+    type: object
+    description: |
+      Flight data to be used for predictions. Additional columns present during training
+      should be provided but are not required
+    properties:
+      opera:
+        description: The name of the airline that operates the flight
+        type: string
+      tipovuelo:
+        description: Type of flight, I = International, N = National
+        type: string
+      mes:
+        description: The number of the month of operation of the flight
+        type: integer
+      Fecha-O:
+        description: The actual date and time of flight operation
+        type: string
+      Fecha-I:
+        description: The scheduled date and time of the flight
+        type: string
+    required:
+      - opera
+      - tipovuelo
+      - mes
+      - Fecha-O
+      - Fecha-I
+    additionalProperties: true
+  PredictionsResponse:
+    type: object
+    description: |
+      An array of predictions
+    properties:
+      predictions:
+        description: |
+          An array of predictions, with each element corresponding to the estimated delay
+          for a flight in the inputs
+        type: array
+        items:
+          type: integer
+          minItems: 1
+    required:
+      - predictions
+    additionalProperties: false
   Error:
     type: object
     description: |
@@ -263,5 +360,6 @@ responses:
       $ref: '#/definitions/Error'
 
 tags:
-  - name: Models
   - name: Health
+  - name: Models
+  - name: Predictions

@@ -41,9 +41,9 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         resp_json = resp.json()
         # The response should have 2 keys - the model ID and the status
-        self.assertCountEqual(['model_id', 'deployed'], resp_json.keys())
+        self.assertCountEqual(['id', 'deployed'], resp_json.keys())
         # Check the model ID matches the ID specified
-        self.assertEqual(resp_json['model_id'], self.model_id)
+        self.assertEqual(resp_json['id'], self.model_id)
         # Check deployed is "ok"
         self.assertEqual(resp_json['deployed'], 'OK')
 

@@ -39,7 +39,7 @@ async def deploy_model(request: Request, model_id: uuid.UUID = Query(alias='mode
 
     request.app.state.model = model.model
     response_json = {
-        'model_id': str(model.id),
+        'id': str(model.id),
         'deployed': 'OK'
     }
     return JSONResponse(content=response_json, status_code=200)
