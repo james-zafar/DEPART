@@ -36,7 +36,7 @@ class TestCreateModel(unittest.TestCase):
         # First check that a model has been loaded and is running
         self.assertIsNotNone(self.client.app.state.model)
         # And that the model is a `DelayModel`
-        self.assertIsInstance(self.client.app.state.model, DelayModel)
+        self.assertIsInstance(self.client.app.state.model.model, DelayModel)
         # Now let's create a new model
         create_model_resp = self.client.post('/v1/models', json={'data_source': self._TRAIN_DATA})
         self.assertEqual(create_model_resp.status_code, 201)

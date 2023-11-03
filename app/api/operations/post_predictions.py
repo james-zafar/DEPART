@@ -11,7 +11,8 @@ predictions_router = APIRouter(prefix='/predictions')
 async def post_predictions(predict_input: PredictionInput, request: Request) -> JSONResponse:
     flights = [flight.model_dump(by_alias=True) for flight in predict_input.flights]
     flights_df = pd.DataFrame(flights)
-    flights_df = request.app.state.model.preprocess(flights_df)
-    preds = request.app.state.model.predict(flights_df)
+    model = request.app.state.model.model
+    flights_df = model.preprocess(flights_df)
+    preds = model.predict(flights_df)
 
     return JSONResponse(content={'predictions': preds}, status_code=200)
