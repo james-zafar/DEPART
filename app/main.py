@@ -2,10 +2,18 @@ import uvicorn
 from fastapi import FastAPI
 
 from app.api.init_router import init_router
+from app.api.resources import Model
 from app.model import DelayModel
 from app.store import ModelStore
 
 V1_URL_PREFIX: str = '/v1'
+
+
+def _load_model() -> Model:
+    delay_model = DelayModel.load('./models/modelv1.0.pkl')
+    model = Model.new_model()
+    model.model = delay_model
+    return model
 
 
 app = FastAPI(
@@ -16,8 +24,8 @@ app = FastAPI(
 )
 
 app.include_router(init_router(V1_URL_PREFIX))
-app.state.model_store = ModelStore()
-app.state.model = DelayModel.load('./models/modelv1.0.pkl')
+app.state.model = _load_model()
+app.state.model_store = ModelStore(default_model=app.state.model)
 
 if __name__ == '__main__':
     # if os.getenv('ENABLE_HTTPS') != 'False':

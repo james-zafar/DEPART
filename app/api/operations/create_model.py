@@ -12,7 +12,7 @@ post_models_router = APIRouter(prefix='/models')
 @post_models_router.post('')
 async def create_model(config: CreateModelRequestBody, request: Request) -> JSONResponse:
     model = Model.new_model()
-    request.app.state.model_store[str(model.id)] = model
+    request.app.state.model_store.add_model(model)
 
     delay_model = DelayModel()
     try:
