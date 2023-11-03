@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  title: Behaviour Discovery API
+  title: Flight delay prediction API
   version: '1.0'
 basePath: /v1
 schemes:
@@ -59,7 +59,7 @@ paths:
     get:
       summary: Retrieve the current state of a delay model
       description: |
-        Retrieves the state of a behaviour model specified by its `model_id`.
+        Retrieves the state of a delay model specified by its `model_id`.
         Use this to determine when the model has finished building and is either
         ready for use, or has failed with an error.
       operationId: get_model
@@ -316,10 +316,6 @@ definitions:
         items:
           $ref: '#/definitions/ErrorItem'
         minItems: 1
-      trace:
-        description: |
-          This field SHOULD contain a lowercase UUID uniquely identifying the request.
-        type: string
       status_code:
         description: |
           This field MAY contain the HTTP status code used for the response. Otherwise, it MUST be omitted.
