@@ -24,14 +24,18 @@ def _validate_api_key(x_api_key: str) -> type[UnauthorizedError] | type[Forbidde
         return ForbiddenError
     return None
 
+
 @deploy_models_router.put('', status_code=200)
-async def deploy_model(request: Request, model_id: uuid.UUID = Query(alias='model-id'), x_api_key: str = Depends(X_API_KEY)) -> JSONResponse:
+async def deploy_model(request: Request, model_id: uuid.UUID = Query(alias='model-id'),
+                       x_api_key: str = Depends(X_API_KEY)) -> JSONResponse:
     if error := _validate_api_key(x_api_key):
         return JSONResponse(content=new_error_response([error()]), status_code=error.status_code)
     if not (model := request.app.state.model_store.get(str(model_id))):
-        return JSONResponse(content=new_error_response([ModelNotFoundError()]), status_code=ModelNotFoundError.status_code)
+        return JSONResponse(content=new_error_response([ModelNotFoundError()]),
+                            status_code=ModelNotFoundError.status_code)
     if model.status != Status.COMPLETED:
-        return JSONResponse(content=new_error_response([ModelNotReadyError()]), status_code=ModelNotReadyError.status_code)
+        return JSONResponse(content=new_error_response([ModelNotReadyError()]),
+                            status_code=ModelNotReadyError.status_code)
 
     request.app.state.model = model.model
     response_json = {
