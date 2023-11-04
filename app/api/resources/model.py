@@ -10,7 +10,7 @@ from app.model import DelayModel
 class Model:
     id: uuid.UUID
     status: Status
-    model: DelayModel = field(default=None)
+    model: DelayModel | None = field(default=None)
     errors: list[Error] = field(default_factory=list)
 
     @classmethod

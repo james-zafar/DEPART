@@ -4,7 +4,7 @@ from app.api.operations import (delete_models_router, deploy_models_router, get_
                                 health_router, post_models_router, post_models_upload_router, predictions_router)
 
 
-def init_router(url_prefix: str = None) -> APIRouter:
+def init_router(url_prefix: str | None = None) -> APIRouter:
     router = APIRouter()
     if url_prefix:
         router.prefix = url_prefix
