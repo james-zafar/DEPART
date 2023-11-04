@@ -232,7 +232,7 @@ class TestE2EWorkflow(unittest.TestCase):
         # The deployed model id should correspond to the uploaded model id
         self.assertEqual(str(self.client.app.state.model.id), model_id)
         deploy_response_json = deploy_response.json()
-        self.assertCountEqual(['id', 'deployed', 'status'], deploy_response_json)
+        self.assertCountEqual(['id', 'deployed'], deploy_response_json)
         # The id should match the input id
         self.assertEqual(model_id, deploy_response_json['id'])
 
