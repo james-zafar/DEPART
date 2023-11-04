@@ -9,7 +9,7 @@ from app.api.resources import Model
 from app.main import app
 
 
-class TestCreateModel(unittest.TestCase):
+class TestDeleteModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.client = TestClient(app)

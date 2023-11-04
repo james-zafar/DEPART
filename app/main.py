@@ -1,3 +1,5 @@
+from typing import Final
+
 import uvicorn
 from fastapi import FastAPI
 
@@ -6,7 +8,7 @@ from app.api.resources import Model
 from app.model import DelayModel
 from app.store import ModelStore
 
-V1_URL_PREFIX: str = '/v1'
+V1_URL_PREFIX: Final[str] = '/v1'
 
 
 def _load_model() -> Model:
