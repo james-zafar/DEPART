@@ -49,6 +49,7 @@ class TestE2EWorkflow(unittest.TestCase):
             _ = uuid.UUID(model_id)
         except ValueError:
             self.fail('The model ID must be a valid UUID')
+        # The status should be `completed`
         self.assertEqual(create_model_resp_json['status'], Status.COMPLETED.value)
         # A location header should be present
         self.assertIn('location', create_model_resp.headers)
@@ -136,27 +137,28 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertIn('location', create_model_resp.headers)
         self.assertEqual(f'{self.client.base_url}/v1/models/{model_id}', create_model_resp.headers['location'])
 
-        # Check the model is in the `ModelStore`
+        # the model is in the `ModelStore`
         self.assertIn(model_id, self.client.app.state.model_store)
         # And that the model has been trained
         trained_model = self.client.app.state.model_store[model_id]
+        # The model should be a `DelayModel` and the underlying model should be a LogisticRegression model
         self.assertIsInstance(trained_model.model, DelayModel)
         self.assertIsInstance(trained_model.model._model, LogisticRegression)
         # The model should not have any errors
         self.assertEqual(len(trained_model.errors), 0)
 
-        # Now try uploading a model
+        # Now let's try uploading an existing model
         resp = self.client.post('/v1/models/upload', json={'model_location': './models/modelv1.0.pkl'})
         self.assertEqual(resp.status_code, 201)
-        resp_json = resp.json()        # Check the model ID is a UUID
+        resp_json = resp.json()
         try:
             _ = uuid.UUID(resp_json['id'])
         except ValueError:
             self.fail('The model id must be a valid UUID')
-        # And that the model is in the `ModelStore`
+        # The model should be present in the `ModelStore`
         self.assertIn(resp_json['id'], self.client.app.state.model_store)
         uploaded_model_id = resp_json['id']
-        # Check the other model is still there
+        # And the other model should still be there
         self.assertEqual(len(self.client.app.state.model_store), 2)
         self.assertIn(model_id, self.client.app.state.model_store)
         # Neither model should be deployed yet
@@ -164,7 +166,7 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertNotEqual(uploaded_model_id, self.client.app.state.model)
         # The status of the model should be `completed`
         self.assertEqual(resp_json['status'], Status.COMPLETED.value)
-        # Check the model is stored as a `Model` resource
+        # the model is stored as a `Model` resource
         self.assertIsInstance(self.client.app.state.model_store[resp_json['id']], Model)
         # There should be a location header
         self.assertIn('location', resp.headers)
@@ -172,7 +174,7 @@ class TestE2EWorkflow(unittest.TestCase):
         expected_location = f'{self.client.base_url}/v1/models/{resp_json["id"]}'
         self.assertEqual(expected_location, resp.headers['location'])
 
-        # It should be possible to retrieve the uploaded model
+        # Check it's possible to retrieve the uploaded model
         get_uploaded_model_resp = self.client.get(f'/v1/models/{uploaded_model_id}')
         self.assertEqual(get_uploaded_model_resp.status_code, 200)
         get_uploaded_model_resp_json = get_uploaded_model_resp.json()
@@ -201,9 +203,7 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(deploy_response.status_code, 200)
         # The deployed model id should correspond to the uploaded model id
         self.assertEqual(str(self.client.app.state.model.id), uploaded_model_id)
-        # The response should have only two fields
         self.assertCountEqual(['id', 'deployed'], deploy_response_json)
-        # The id should match the input id
         self.assertEqual(uploaded_model_id, deploy_response_json['id'])
         # Both models should still be in the store
         self.assertCountEqual([uploaded_model_id, model_id], self.client.app.state.model_store)
@@ -231,9 +231,8 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(deploy_response.status_code, 200)
         # The deployed model id should correspond to the uploaded model id
         self.assertEqual(str(self.client.app.state.model.id), model_id)
-        # The response should have only two fields
         deploy_response_json = deploy_response.json()
-        self.assertCountEqual(['id', 'deployed'], deploy_response_json)
+        self.assertCountEqual(['id', 'deployed', 'status'], deploy_response_json)
         # The id should match the input id
         self.assertEqual(model_id, deploy_response_json['id'])
 
@@ -241,18 +240,15 @@ class TestE2EWorkflow(unittest.TestCase):
         get_created_model_resp_json = self.client.get(f'/v1/models/{model_id}')
         self.assertEqual(get_created_model_resp_json.status_code, 200)
         get_created_model_resp_json = get_created_model_resp_json.json()
-        # The ID should match the ID from when we uploaded the model
         self.assertEqual(get_created_model_resp_json['id'], model_id)
-        # The status should be `completed`
         self.assertEqual(get_created_model_resp_json['status'], Status.COMPLETED.value)
 
         # Deleting the model currently deployed should result in the deployment of the `default_model`
         delete_response = self.client.delete(f'/v1/models/{model_id}')
         self.assertEqual(delete_response.status_code, 204)
+        self.assertIsNone(delete_response.json())
         # Check the model is no longer the deployed model
         self.assertNotEqual(model_id, str(self.client.app.state.model.id))
-        # The response body must be empty
-        self.assertIsNone(delete_response.json())
         # The model should have been removed from the model_store
         self.assertNotIn(model_id, self.client.app.state.model_store)
         # The other uploaded model should still be present
