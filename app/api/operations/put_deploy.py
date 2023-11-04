@@ -14,7 +14,7 @@ X_API_KEY = APIKeyHeader(name='X-api-key')
 
 
 def _validate_api_key(x_api_key: str) -> type[UnauthorizedError] | type[ForbiddenError] | None:
-    api_user, api_key = os.environ.get('API_KEY').split('=')
+    api_user, api_key = os.environ['API_KEY'].split('=')
     if '=' not in x_api_key:
         return UnauthorizedError
     x_api_user, x_api_key = x_api_key.split('=')

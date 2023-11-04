@@ -1,6 +1,5 @@
 import pickle
 from datetime import datetime
-from typing import Tuple, Union, List
 
 import numpy as np
 import pandas as pd
@@ -30,7 +29,7 @@ class DelayModel:
 
         return instance
 
-    def preprocess(self, data: pd.DataFrame, target_column: str = None) -> Union[Tuple[pd.DataFrame, pd.DataFrame], pd.DataFrame]:
+    def preprocess(self, data: pd.DataFrame, target_column: str | None = None) -> tuple[pd.DataFrame, pd.DataFrame] | pd.DataFrame:
         data['min_diff'] = data.apply(get_min_diff, axis=1)
 
         threshold_in_minutes = 15
@@ -68,7 +67,7 @@ class DelayModel:
         features, target = self.preprocess(data, target_col)
         return self.fit(features, target)
 
-    def predict(self, features: pd.DataFrame) -> List[int]:
+    def predict(self, features: pd.DataFrame) -> list[int]:
         return self._model.predict(features).tolist()
 
     def save(self, file_name: str) -> None:
