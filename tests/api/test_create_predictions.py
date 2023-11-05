@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
-class TestCreateModel(unittest.TestCase):
+class TestCreatePredictions(unittest.TestCase):
     data = {
         'flights': [
             {

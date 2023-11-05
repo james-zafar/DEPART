@@ -8,7 +8,7 @@ from app.api.schemas import Status
 from app.main import app
 
 
-class TestCreateModel(unittest.TestCase):
+class TestGetModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.client = TestClient(app)
