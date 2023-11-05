@@ -27,4 +27,4 @@ async def create_model(config: CreateModelRequestBody, request: Request) -> JSON
     request.app.state.model_store.update_model(str(model.id), delay_model)
 
     headers = {'Location': f'{str(request.url)}/{str(model.id)}'}
-    return JSONResponse(content=model.json(), headers=headers, status_code=201)
+    return JSONResponse(content=model.new_model_response(), headers=headers, status_code=201)
