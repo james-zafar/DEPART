@@ -14,9 +14,10 @@ class TestGetModel(unittest.TestCase):
         cls.client = TestClient(app)
 
     def setUp(self) -> None:
-        resp = self.client.post('/v1/models', json={'data_source': './data/data.csv'})
-        assert resp.status_code == 201
-        self.model_id = resp.json()['id']
+        model = Model.new_model()
+        self.client.app.state.model_store.add_model(model)
+        self.client.app.state.model_store.update_status(str(model.id), Status.COMPLETED)
+        self.model_id = str(model.id)
 
     def tearDown(self) -> None:
         self.client.app.state.model_store.clear()
@@ -26,11 +27,13 @@ class TestGetModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         resp_json = resp.json()
         # As the model succeeded, only the id and status should be present
-        self.assertCountEqual(['id', 'status'], resp_json)
+        self.assertCountEqual(['id', 'status', 'deployed'], resp_json)
         # The ID should match the ID in the request
         self.assertEqual(resp_json['id'], self.model_id)
-        # And the status should be `completed`
+        # The status should be `completed`
         self.assertEqual(resp_json['status'], Status.COMPLETED.value)
+        # And the model should not be deployed
+        self.assertFalse(resp_json['deployed'])
 
     def test_can_retrieve_pending_model(self) -> None:
         # Create a new model that is `pending`
@@ -41,7 +44,9 @@ class TestGetModel(unittest.TestCase):
         resp_json = resp.json()
         # The ID should match the ID in the request
         self.assertEqual(resp_json['id'], str(pending_model.id))
-        # And the status should be `pending`
+        # THe model should not be deployed
+        self.assertFalse(resp_json['deployed'])
+        # The status should be `pending`
         self.assertEqual(resp_json['status'], Status.PENDING.value)
 
     def test_can_retrieve_failed_model(self) -> None:
@@ -55,7 +60,7 @@ class TestGetModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         resp_json = resp.json()
         # The response should have an `errors` field as well as the ID and status
-        self.assertCountEqual(['id', 'status', 'errors'], resp_json)
+        self.assertCountEqual(['id', 'status', 'errors', 'deployed'], resp_json)
         # Check the model ID is correct
         self.assertEqual(resp_json['id'], model_id)
         # And the status should be `failed`
@@ -65,6 +70,8 @@ class TestGetModel(unittest.TestCase):
         self.assertEqual(len(resp_json['errors']), 1)
         # A `DataFormatError` should be present in the errors list
         self.assertEqual(DataFormatError().json(), resp_json['errors'][0])
+        # A failed model must not be deployed
+        self.assertFalse(resp_json['deployed'])
 
     def test_can_retrieve_running_model(self) -> None:
         running_model = Model.new_model()
@@ -77,6 +84,8 @@ class TestGetModel(unittest.TestCase):
         self.assertEqual(resp_json['id'], str(running_model.id))
         # And the status should be `running`
         self.assertEqual(resp_json['status'], Status.RUNNING.value)
+        # The `deployed` flag should be false
+        self.assertFalse(resp_json['deployed'])
 
     def test_can_export_completed_model(self) -> None:
         ...

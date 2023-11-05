@@ -28,7 +28,7 @@ class TestUploadModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         resp_json = resp.json()
         # The response should have only two fields - `id` and `status`
-        self.assertCountEqual(['id', 'status'], resp_json)
+        self.assertCountEqual(['id', 'status', 'deployed'], resp_json)
         # Check the model ID is a UUID
         try:
             _ = uuid.UUID(resp_json['id'])
@@ -42,6 +42,8 @@ class TestUploadModel(unittest.TestCase):
         self.assertIsInstance(self.client.app.state.model_store[resp_json['id']], Model)
         # And that the model itself is a `DelayModel`
         self.assertIsInstance(self.client.app.state.model_store[resp_json['id']].model, DelayModel)
+        # The uploaded model should not be deployed
+        self.assertFalse(resp_json['deployed'])
         # There should be a location header
         self.assertIn('location', resp.headers)
         # And the value should be the location of the model
