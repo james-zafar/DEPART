@@ -45,6 +45,7 @@ paths:
             application/json:
               id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
               status: pending
+              deployed: false
         '400':
           $ref: '#/responses/BadRequest'
 
@@ -88,6 +89,7 @@ paths:
             application/json:
               id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
               status: completed
+              deployed: false
         '400':
           $ref: '#/responses/BadRequest'
         '404':
@@ -143,7 +145,7 @@ paths:
             application/json:
               id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
               status: completed
-              deployed: ok
+              deployed: true
         '400':
           $ref: '#/responses/BadRequest'
         '401':
@@ -185,6 +187,7 @@ paths:
             application/json:
               id: '598f0de1-77dc-4780-8bcb-1226225bbb62'
               status: completed
+              deployed: false
         '400':
           $ref: '#/responses/BadRequest'
 
@@ -258,11 +261,12 @@ definitions:
         type: string
       deployed:
         description: |
-          The status of the deploy job, typically only present when using PUT /models/deploy
-        type: string
+          A flag indicating whether the specified model corresponds to the production model.
+        type: boolean
     required:
       - id
       - status
+      - deployed
   ModelConfig:
     description: |
       Configures a model training task

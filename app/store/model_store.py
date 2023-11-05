@@ -12,7 +12,7 @@ VT = TypeVar('VT', bound=Model)
 
 @dataclass
 class ModelStore(MutableMapping[KT, VT]):
-    default_model: Model | None = field(default=None)
+    default_model: Model | None
     _data: dict[KT, VT] = field(default_factory=dict, init=False)
 
     def update_status(self, model_id: KT, status: Status) -> None:
