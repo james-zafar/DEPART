@@ -41,11 +41,13 @@ class TestDeployModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         resp_json = resp.json()
         # The response should have 2 keys - the model ID and the status
-        self.assertCountEqual(['id', 'deployed'], resp_json.keys())
+        self.assertCountEqual(['id', 'deployed', 'status'], resp_json)
         # Check the model ID matches the ID specified
         self.assertEqual(resp_json['id'], self.model_id)
-        # Check deployed is "ok"
-        self.assertEqual(resp_json['deployed'], 'OK')
+        # The model status must be `completed`
+        self.assertEqual(resp_json['status'], Status.COMPLETED.value)
+        # Check the deployed flag is set to True
+        self.assertTrue(resp_json['deployed'])
 
     def test_deploy_fails_with_unauthorized_user(self) -> None:
         resp = self.client.put(f'/v1/models/deploy?model-id={self.model_id}',

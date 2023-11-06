@@ -23,7 +23,7 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         resp_json = resp.json()
         # The response should have 2 keys - the model ID and the status
-        self.assertCountEqual(['id', 'status'], resp_json.keys())
+        self.assertCountEqual(['id', 'status', 'deployed'], resp_json.keys())
         # Check the ID is a valid UUID
         try:
             _ = uuid.UUID(resp_json['id'])
@@ -35,6 +35,8 @@ class TestCreateModel(unittest.TestCase):
         self.assertIn('location', resp.headers)
         expected_location = f'{self.client.base_url}/v1/models/{resp_json["id"]}'
         self.assertEqual(resp.headers['location'], expected_location)
+        # By default, the model should not be deployed
+        self.assertFalse(resp_json['deployed'])
 
     def test_create_model_saves_to_model_store(self) -> None:
         # Create a model with a valid data path
@@ -73,7 +75,7 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(resp.status_code, 201)
         resp_json = resp.json()
         # There should be 3 keys in the response
-        self.assertCountEqual(['id', 'status', 'errors'], resp_json.keys())
+        self.assertCountEqual(['id', 'status', 'errors', 'deployed'], resp_json.keys())
         # Check the model ID is valid
         try:
             _ = uuid.UUID(resp_json['id'])
@@ -84,8 +86,10 @@ class TestCreateModel(unittest.TestCase):
         self.assertEqual(len(resp_json['errors']), 1)
         # The error should be a `DataFormatError`
         self.assertEqual(resp_json['errors'][0], DataFormatError().json())
-        # And the status of the model is failed
+        # The status of the model is failed
         self.assertEqual(resp_json['status'], 'failed')
+        # The model should not be deployed
+        self.assertFalse(resp_json['deployed'])
 
 
 if __name__ == '__main__':

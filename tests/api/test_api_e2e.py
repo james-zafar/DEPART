@@ -43,7 +43,7 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(create_model_resp.status_code, 201)
         create_model_resp_json = create_model_resp.json()
         model_id = create_model_resp_json['id']
-        self.assertCountEqual(['id', 'status'], create_model_resp_json.keys())
+        self.assertCountEqual(['id', 'status', 'deployed'], create_model_resp_json)
         # Check the response body
         try:
             _ = uuid.UUID(model_id)
@@ -51,6 +51,8 @@ class TestE2EWorkflow(unittest.TestCase):
             self.fail('The model ID must be a valid UUID')
         # The status should be `completed`
         self.assertEqual(create_model_resp_json['status'], Status.COMPLETED.value)
+        # The model should not be deployed
+        self.assertFalse(create_model_resp_json['deployed'])
         # A location header should be present
         self.assertIn('location', create_model_resp.headers)
         self.assertEqual(f'{self.client.base_url}/v1/models/{model_id}', create_model_resp.headers['location'])
@@ -69,9 +71,11 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(get_model_response.status_code, 200)
         get_model_response_json = get_model_response.json()
         # The response should contain only the ID and status of the model
-        self.assertCountEqual(['id', 'status'], get_model_response_json)
+        self.assertCountEqual(['id', 'status', 'deployed'], get_model_response_json)
         self.assertEqual(model_id, get_model_response_json['id'])
         self.assertEqual(get_model_response_json['status'], Status.COMPLETED.value)
+        # The model should not be deployed
+        self.assertFalse(get_model_response_json['deployed'])
 
         # Now let's try deploying the model
         # Set an API key first
@@ -81,10 +85,13 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(deploy_response.status_code, 200)
         deploy_response_json = deploy_response.json()
         # The response should contain only 2 fields
-        self.assertCountEqual(['id', 'deployed'], deploy_response_json.keys())
+        self.assertCountEqual(['id', 'deployed', 'status'], deploy_response_json.keys())
         # The ID should be the same as the input ID
         self.assertEqual(model_id, deploy_response_json['id'])
-        # FIXME: We should ideally track the ID of he model currently in prod
+        # The `deployed` flag should be True
+        self.assertTrue(deploy_response_json['deployed'])
+        # The id of the deployed model should be the same as the id specified in the PUT request
+        self.assertEqual(str(self.client.app.state.model.id), model_id)
 
         # Next let's generate some predictions
         predict_response = self.client.post('/v1/predictions', json=self._PREDICT_DATA)
@@ -121,13 +128,12 @@ class TestE2EWorkflow(unittest.TestCase):
         del os.environ['API_KEY']
 
     def test_e2e_workflow_with_model_upload(self) -> None:
-        # Now let's create a new model
         create_model_resp = self.client.post('/v1/models', json={'data_source': self._TRAIN_DATA})
         self.assertEqual(create_model_resp.status_code, 201)
         create_model_resp_json = create_model_resp.json()
         model_id = create_model_resp_json['id']
-        self.assertCountEqual(['id', 'status'], create_model_resp_json.keys())
-        # Check the response body
+        self.assertCountEqual(['id', 'status', 'deployed'], create_model_resp_json.keys())
+        # The response body has a UUID model id
         try:
             _ = uuid.UUID(model_id)
         except ValueError:
@@ -136,6 +142,8 @@ class TestE2EWorkflow(unittest.TestCase):
         # A location header should be present
         self.assertIn('location', create_model_resp.headers)
         self.assertEqual(f'{self.client.base_url}/v1/models/{model_id}', create_model_resp.headers['location'])
+        # The model should not be deployed
+        self.assertFalse(create_model_resp_json['deployed'])
 
         # the model is in the `ModelStore`
         self.assertIn(model_id, self.client.app.state.model_store)
@@ -144,7 +152,6 @@ class TestE2EWorkflow(unittest.TestCase):
         # The model should be a `DelayModel` and the underlying model should be a LogisticRegression model
         self.assertIsInstance(trained_model.model, DelayModel)
         self.assertIsInstance(trained_model.model._model, LogisticRegression)
-        # The model should not have any errors
         self.assertEqual(len(trained_model.errors), 0)
 
         # Now let's try uploading an existing model
@@ -179,18 +186,20 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(get_uploaded_model_resp.status_code, 200)
         get_uploaded_model_resp_json = get_uploaded_model_resp.json()
         # The response should have two fields, `id` and `status`
-        self.assertCountEqual(['id', 'status'], get_uploaded_model_resp_json)
+        self.assertCountEqual(['id', 'status', 'deployed'], get_uploaded_model_resp_json)
         # The ID should match the ID from when we uploaded the model
         self.assertEqual(get_uploaded_model_resp_json['id'], uploaded_model_id)
         # The status should be `completed`
         self.assertEqual(get_uploaded_model_resp_json['status'], Status.COMPLETED.value)
+        # The uploaded model should not be deployed
+        self.assertFalse(get_uploaded_model_resp_json['deployed'])
 
         # We should also be able to retrieve the model we created earlier
         get_created_model_resp = self.client.get(f'/v1/models/{model_id}')
         self.assertEqual(get_created_model_resp.status_code, 200)
         get_created_model_resp = get_created_model_resp.json()
         # The response should have two fields, `id` and `status`
-        self.assertCountEqual(['id', 'status'], get_created_model_resp)
+        self.assertCountEqual(['id', 'status', 'deployed'], get_created_model_resp)
         # The ID should match the ID from when we uploaded the model
         self.assertEqual(get_created_model_resp['id'], model_id)
 
@@ -203,8 +212,10 @@ class TestE2EWorkflow(unittest.TestCase):
         self.assertEqual(deploy_response.status_code, 200)
         # The deployed model id should correspond to the uploaded model id
         self.assertEqual(str(self.client.app.state.model.id), uploaded_model_id)
-        self.assertCountEqual(['id', 'deployed'], deploy_response_json)
+        self.assertCountEqual(['id', 'deployed', 'status'], deploy_response_json)
         self.assertEqual(uploaded_model_id, deploy_response_json['id'])
+        # The `deployed` flag should be set to True
+        self.assertTrue(deploy_response_json['deployed'])
         # Both models should still be in the store
         self.assertCountEqual([uploaded_model_id, model_id], self.client.app.state.model_store)
         # There should also still be a default model
@@ -232,9 +243,11 @@ class TestE2EWorkflow(unittest.TestCase):
         # The deployed model id should correspond to the uploaded model id
         self.assertEqual(str(self.client.app.state.model.id), model_id)
         deploy_response_json = deploy_response.json()
-        self.assertCountEqual(['id', 'deployed'], deploy_response_json)
+        self.assertCountEqual(['id', 'deployed', 'status'], deploy_response_json)
         # The id should match the input id
         self.assertEqual(model_id, deploy_response_json['id'])
+        # The `deployed` flag should be True
+        self.assertTrue(deploy_response_json['deployed'])
 
         # We should still be able to retrieve the other model that is not currently deployed
         get_created_model_resp_json = self.client.get(f'/v1/models/{model_id}')

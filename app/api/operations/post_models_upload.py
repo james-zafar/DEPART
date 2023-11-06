@@ -26,4 +26,4 @@ async def post_models_upload(config: UploadModelsBody, request: Request) -> JSON
     request.app.state.model_store.update_status(str(model.id), Status.COMPLETED)
 
     headers = {'Location': f'{str(request.base_url)}v1/models/{str(model.id)}'}
-    return JSONResponse(content=model.json(), headers=headers, status_code=201)
+    return JSONResponse(content=model.new_model_response(), headers=headers, status_code=201)
