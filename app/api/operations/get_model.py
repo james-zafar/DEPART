@@ -20,7 +20,7 @@ async def get_model(model_id: uuid.UUID, request: Request, export: bool | None =
         file_name = file_name or f'{model_id}.pkl'
         model.model.save(file_name)
     model_deployed = False
-    if request.app.state.model is not None:  # TODO: There should never not be a model
+    if request.app.state.model is not None:  # FIXME: There should never not be a model
         model_deployed = model_id == request.app.state.model.id
     response_json = model.new_model_response(deployed=model_deployed, exported=export)
     return JSONResponse(content=response_json, status_code=200)

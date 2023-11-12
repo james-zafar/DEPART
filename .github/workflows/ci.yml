@@ -35,4 +35,4 @@ jobs:
         run: |
           sh ./scripts/run_model_tests.sh
       - name: Build the Docker image
-        run: docker build . --tag latam-tech-challenge-api:$(date +%s)
+        run: docker build . --tag depart-api:$(date +%s)
